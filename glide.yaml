@@ -1,0 +1,24 @@
+package: github.com/aongko/gcsutil
+import:
+- package: cloud.google.com/go
+  subpackages:
+  - storage
+- package: github.com/mitchellh/go-homedir
+- package: github.com/spf13/cobra
+- package: github.com/spf13/viper
+- package: google.golang.org/api
+  subpackages:
+  - iterator
+- package: github.com/golang/protobuf
+  version: master
+- package: golang.org/x/net
+  version: master
+  subpackages:
+  - http2
+- package: google.golang.org/grpc
+  version: master
+  subpackages:
+  - status
+  - transport
+- package: golang.org/x/text
+  version: master
