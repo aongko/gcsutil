@@ -23,13 +23,16 @@ import (
 )
 
 var cfgFile string
+var googleServiceAccountFile string
 
+// RootCmd is the root command of Cobra
 var RootCmd = &cobra.Command{
 	Use:   "gcsutil",
 	Short: "Some helper for Google Cloud Storage",
 	Long:  `Provide some helper to list and downloads object(s) from Google Cloud Storage`,
 }
 
+// Execute to run the Cobra
 func Execute() {
 	if err := RootCmd.Execute(); err != nil {
 		fmt.Println(err)
@@ -40,8 +43,9 @@ func Execute() {
 func init() {
 	cobra.OnInitialize(initConfig)
 
-	// RootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.gcsutil.yaml)")
-	// RootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	RootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.gcsutil.yaml)")
+	RootCmd.PersistentFlags().StringVar(&googleServiceAccountFile, "service_account_file", "", "path to google service account file")
+	viper.BindPFlag("service_account_file", RootCmd.PersistentFlags().Lookup("service_account_file"))
 }
 
 // initConfig reads in config file and ENV variables if set.
@@ -67,5 +71,11 @@ func initConfig() {
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {
 		fmt.Println("Using config file:", viper.ConfigFileUsed())
+	} else {
+		if viper.GetString("service_account_file") == "" {
+			fmt.Println("Could not read config file:", err)
+			fmt.Println("Please provide the file, or set --service_account_file")
+			os.Exit(1)
+		}
 	}
 }

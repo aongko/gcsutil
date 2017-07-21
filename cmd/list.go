@@ -24,8 +24,12 @@ import (
 	"cloud.google.com/go/storage"
 	"google.golang.org/api/iterator"
 
+	"github.com/aongko/gcsutil/gcsutil"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
+
+var prefix string
 
 // listCmd represents the list command
 var listCmd = &cobra.Command{
@@ -42,13 +46,17 @@ to quickly create a Cobra application.`,
 			return errors.New("no bucket specified")
 		}
 		ctx := context.Background()
-		client, err := storage.NewClient(ctx)
+		client, err := gcsutil.NewStorageClient(ctx, viper.GetString("service_account_file"))
 		if err != nil {
 			log.Fatal(err)
 			return err
 		}
 		for _, bucket := range args {
-			list(os.Stdout, client, bucket)
+			if prefix == "" {
+				list(os.Stdout, client, bucket)
+			} else {
+				listByPrefix(os.Stdout, client, bucket, prefix, "")
+			}
 		}
 		return nil
 	},
@@ -97,6 +105,7 @@ func listByPrefix(w io.Writer, client *storage.Client, bucket, prefix, delim str
 		Delimiter: delim,
 	})
 	fmt.Fprintln(w, "Bucket: "+bucket)
+	fmt.Fprintln(w, "Using Prefix: "+prefix)
 	for {
 		attrs, err := it.Next()
 		if err == iterator.Done {
@@ -112,5 +121,6 @@ func listByPrefix(w io.Writer, client *storage.Client, bucket, prefix, delim str
 }
 
 func init() {
+	listCmd.Flags().StringVarP(&prefix, "prefix", "p", "", "This will list files in a bucket with the specified prefix")
 	RootCmd.AddCommand(listCmd)
 }
